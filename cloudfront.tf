@@ -33,7 +33,7 @@ resource "aws_cloudfront_distribution" "main" {
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id          = aws_cloudfront_cache_policy.formbricks_policy.id
-    origin_request_policy_id = aws_cloudfront_origin_request_policy.formbricks_policy.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
   }
 
   origin {
@@ -68,7 +68,7 @@ resource "aws_cloudfront_cache_policy" "formbricks_policy" {
   name        = "${var.project}-cache-policy"
   comment     = "Cache policy for Formbricks Next.js app"
   default_ttl = 0
-  max_ttl     = 1
+  max_ttl     = 86400
   min_ttl     = 0
 
   parameters_in_cache_key_and_forwarded_to_origin {
@@ -98,25 +98,6 @@ resource "aws_cloudfront_cache_policy" "formbricks_policy" {
   }
 }
 
-resource "aws_cloudfront_origin_request_policy" "formbricks_policy" {
-  name    = "${var.project}-origin-request-policy"
-  comment = "Origin request policy for Formbricks Next.js app"
-
-  cookies_config {
-    cookie_behavior = "all"
-  }
-
-  headers_config {
-    header_behavior = "allViewerAndWhitelistCloudFront"
-    headers {
-      items = [
-        "CloudFront-Viewer-Address",
-        "CloudFront-Viewer-Country"
-      ]
-    }
-  }
-
-  query_strings_config {
-    query_string_behavior = "all"
-  }
+data "aws_cloudfront_origin_request_policy" "all_viewer" {
+  name = "Managed-AllViewer"
 }
